@@ -1,3 +1,4 @@
+import javax.security.auth.Subject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -6,34 +7,56 @@ public class Arithmetic {
 
     List e = new ArrayList<String>();   // 用于存放题目
     List a = new ArrayList<String>();   // 用于按题号顺序存放答案
+    static int  num = 10;    // 题目数量，默认为10道
+    static int range = 0;   // 数值范围
+    static String error = null;    // 错误信息
+    static String efile = "src" + File.separator;   // 给定的题目文件
+    static String afile = "src" + File.separator;   // 给定的答案文件
 
     static void main(String[] argv) {
-        // 获取参数
-        int  num = 0;    // 题目数量
-        int range = 0;   // 数值范围
-        StringBuffer sb = new StringBuffer();
-        for(int i = 0; i < argv.length; i++){
-            sb. append(argv[i]);
-        }
-        String ag = sb.toString();
-        if (!ag.contains("-r"))
-        {   // 先判断是否有指定数值范围，没有则报错
-            System.out.println("请指定数值范围！例： -r 10");
-        }else
-        {
-            for (int i=0; i<argv.length; i++)
+        // 根据功能处理参数
+        for (int i=0; i<argv.length; i++) {
+            if (argv[i].equals("-r")) {
+                range = Integer.parseInt(argv[i+1]);
+            } else if (argv[i].equals("-n"))
             {
-                if (argv[i].equals("-r"))
-                {
-                    range = Integer.parseInt(argv[i+1]);
-                }
-                else if (argv[i].equals("-n"))
-                {
-                    num = Integer.parseInt(argv[i+1]);
-                }
+                num = Integer.parseInt(argv[i+1]);
+            } else if (argv[i].equals("-h")) {  // 帮助信息
+                System.out.println("-r 参数: 控制题目中数值（自然数、真分数和真分数分母）的范围 \n例如: Myapp.exe -r 10 将生成10以内(不包括10)的四则运算题目");
+                System.out.println("-n 参数: 控制生成题目的个数 \n例如: Myapp.exe -n 10  将生成10个题目");
+                System.out.println("支持对给定的题目文件和答案文件，判定答案中的对错并进行数量统计 具体参数如下:\nMyapp.exe -e <exercisefile>.txt -a <answerfile>.txt");
+            } else if (argv[i].equals("-e")) {
+                efile = efile + argv[i+1];
+            } else if (argv[i].equals("-a")) {
+                afile = afile + argv[i+1];
             }
         }
-        subject(num, range);    // 生成题目
+        if (able(num, range)) {
+            subject(num, range);
+        }else {
+            System.out.println(error);
+        }
+    }
+
+    static boolean able(int n, int r) {
+        // 用于检查输入的题目数量与数值范围是否可实现,并修改
+        if (n>10000) {
+            error = "最大题数为10000";
+            return false;
+        } else if (n<=0) {
+            error = "题数不合法";
+            return false;
+        } else if (range == 0) {
+            error = "请给定数值范围，详细操作通过 -h 查看";
+            return false;
+        } else if (range<0) {
+            error = "数值范围不合法";
+            return false;
+        } else if (range<5) {
+            error = "数值范围过小，至少为5";
+            return false;
+        }
+        return true;
     }
 
     static void subject(int n, int r) {
