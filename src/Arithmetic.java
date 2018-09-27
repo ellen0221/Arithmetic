@@ -7,103 +7,233 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 public class Arithmetic {
 
-    List e = new ArrayList<String>();   // ÓÃÓÚ´æ·ÅÌâÄ¿
-    List a = new ArrayList<String>();   // ÓÃÓÚ°´ÌâºÅË³Ğò´æ·Å´ğ°¸
-    static int  num = 10;    // ÌâÄ¿ÊıÁ¿£¬Ä¬ÈÏÎª10µÀ
-    static int range = 0;   // ÊıÖµ·¶Î§
-    static String error = null;    // ´íÎóĞÅÏ¢
-    static String efile = "src" + File.separator;   // ¸ø¶¨µÄÌâÄ¿ÎÄ¼ş
-    static String afile = "src" + File.separator;   // ¸ø¶¨µÄ´ğ°¸ÎÄ¼ş
+    List e = new ArrayList<String>();   // ç”¨äºå­˜æ”¾é¢˜ç›®
+    List a = new ArrayList<String>();   // ç”¨äºæŒ‰é¢˜å·é¡ºåºå­˜æ”¾ç­”æ¡ˆ
+    static String[] opr = {"+", "-", "x", "Ã·"};
+    static ArrayList<Object> exp = new ArrayList<Object>();	// è¡¨è¾¾å¼
+    static int  num = 10;    // é¢˜ç›®æ•°é‡ï¼Œé»˜è®¤ä¸º10é“
+    static int range = 0;   // æ•°å€¼èŒƒå›´
+    static String error = null;    // é”™è¯¯ä¿¡æ¯
+    static String efile = "src" + File.separator;   // ç»™å®šçš„é¢˜ç›®æ–‡ä»¶ï¼šExercise.txt
+    static String afile = "src" + File.separator;   // ç»™å®šçš„ç­”æ¡ˆæ–‡ä»¶ï¼šAnswer.txt
+    static String gfile = "src" + File.separator;   // ç»“æœç»Ÿè®¡æ–‡ä»¶ï¼šGrade.txt
 
-    public static void main(String[] argv) {
-    	
-    	/*String nume=change(25,15);
-    	System.out.println(nume);
-    	//²âÊÔ¼Ù·ÖÊı×ª»»ÎªÕæ·ÖÊı*/
-    	
-    	/*List<String> s = new ArrayList<String>();
-		s.add("1+1=11");
-		s.add("1+1=11");
-		save(s);
-		//²âÊÔ´æÌâÄ¿*/
-    	
-    	/*List<String> a = new ArrayList<String>();
-		a.add("1+1=11");
-		a.add("1+1=11");
-		answer(a);
-		//²âÊÔ´æ´ğ°¸*/
-    	
-        // ¸ù¾İ¹¦ÄÜ´¦Àí²ÎÊı
+    static void main(String[] argv) {
+        // æ ¹æ®åŠŸèƒ½å¤„ç†å‚æ•°
         for (int i=0; i<argv.length; i++) {
             if (argv[i].equals("-r")) {
                 range = Integer.parseInt(argv[i+1]);
             } else if (argv[i].equals("-n"))
             {
                 num = Integer.parseInt(argv[i+1]);
-            } else if (argv[i].equals("-h")) {  // °ïÖúĞÅÏ¢
-                System.out.println("-r ²ÎÊı: ¿ØÖÆÌâÄ¿ÖĞÊıÖµ£¨×ÔÈ»Êı¡¢Õæ·ÖÊıºÍÕæ·ÖÊı·ÖÄ¸£©µÄ·¶Î§ \nÀıÈç: Myapp.exe -r 10 ½«Éú³É10ÒÔÄÚ(²»°üÀ¨10)µÄËÄÔòÔËËãÌâÄ¿");
-                System.out.println("-n ²ÎÊı: ¿ØÖÆÉú³ÉÌâÄ¿µÄ¸öÊı \nÀıÈç: Myapp.exe -n 10  ½«Éú³É10¸öÌâÄ¿");
-                System.out.println("Ö§³Ö¶Ô¸ø¶¨µÄÌâÄ¿ÎÄ¼şºÍ´ğ°¸ÎÄ¼ş£¬ÅĞ¶¨´ğ°¸ÖĞµÄ¶Ô´í²¢½øĞĞÊıÁ¿Í³¼Æ ¾ßÌå²ÎÊıÈçÏÂ:\nMyapp.exe -e <exercisefile>.txt -a <answerfile>.txt");
+            } else if (argv[i].equals("-h")) {  // å¸®åŠ©ä¿¡æ¯
+                System.out.println("-r å‚æ•°: æ§åˆ¶é¢˜ç›®ä¸­æ•°å€¼ï¼ˆè‡ªç„¶æ•°ã€çœŸåˆ†æ•°å’ŒçœŸåˆ†æ•°åˆ†æ¯ï¼‰çš„èŒƒå›´ \nä¾‹å¦‚: Myapp.exe -r 10 å°†ç”Ÿæˆ10ä»¥å†…(ä¸åŒ…æ‹¬10)çš„å››åˆ™è¿ç®—é¢˜ç›®");
+                System.out.println("-n å‚æ•°: æ§åˆ¶ç”Ÿæˆé¢˜ç›®çš„ä¸ªæ•° \nä¾‹å¦‚: Myapp.exe -n 10  å°†ç”Ÿæˆ10ä¸ªé¢˜ç›®");
+                System.out.println("æ”¯æŒå¯¹ç»™å®šçš„é¢˜ç›®æ–‡ä»¶å’Œç­”æ¡ˆæ–‡ä»¶ï¼Œåˆ¤å®šç­”æ¡ˆä¸­çš„å¯¹é”™å¹¶è¿›è¡Œæ•°é‡ç»Ÿè®¡ å…·ä½“å‚æ•°å¦‚ä¸‹:\nMyapp.exe -e <exercisefile>.txt -a <answerfile>.txt");
             } else if (argv[i].equals("-e")) {
                 efile = efile + argv[i+1];
+                range = 10; // é˜²æ­¢æŠ¥é”™
             } else if (argv[i].equals("-a")) {
                 afile = afile + argv[i+1];
+                range = 10;
             }
         }
         if (able(num, range)) {
-            subject(num, range);
+            for (int i=0; i<num; i++) {
+                subject();
+            }
+//            subject(num, range);
         }else {
             System.out.println(error);
         }
     }
 
     static boolean able(int n, int r) {
-        // ÓÃÓÚ¼ì²éÊäÈëµÄÌâÄ¿ÊıÁ¿ÓëÊıÖµ·¶Î§ÊÇ·ñ¿ÉÊµÏÖ,²¢ĞŞ¸Ä
+        // ç”¨äºæ£€æŸ¥è¾“å…¥çš„é¢˜ç›®æ•°é‡ä¸æ•°å€¼èŒƒå›´æ˜¯å¦å¯å®ç°,å¹¶ä¿®æ”¹
         if (n>10000) {
-            error = "×î´óÌâÊıÎª10000";
+            error = "æœ€å¤§é¢˜æ•°ä¸º10000";
             return false;
         } else if (n<=0) {
-            error = "ÌâÊı²»ºÏ·¨";
+            error = "é¢˜æ•°ä¸åˆæ³•";
             return false;
         } else if (range == 0) {
-            error = "Çë¸ø¶¨ÊıÖµ·¶Î§£¬ÏêÏ¸²Ù×÷Í¨¹ı -h ²é¿´";
+            error = "è¯·ç»™å®šæ•°å€¼èŒƒå›´ï¼Œè¯¦ç»†æ“ä½œé€šè¿‡ -h æŸ¥çœ‹";
             return false;
         } else if (range<0) {
-            error = "ÊıÖµ·¶Î§²»ºÏ·¨";
+            error = "æ•°å€¼èŒƒå›´ä¸åˆæ³•";
             return false;
         } else if (range<5) {
-            error = "ÊıÖµ·¶Î§¹ıĞ¡£¬ÖÁÉÙÎª5";
+            error = "æ•°å€¼èŒƒå›´è¿‡å°ï¼Œè‡³å°‘ä¸º5";
             return false;
         }
         return true;
     }
 
-    static void subject(int n, int r) {
-        // Éú³ÉÖ¸¶¨ÊıÁ¿ÌâÄ¿
-        String[] e = {"+", "-", "x", "¡Â"};
+    static ArrayList<Object> subject() {
+        // éšæœºæ•°
+        Random rand = new Random();
+        // è¿ç®—ç¬¦ä¸ªæ•° 1-3 ä¸ª
+        int opr_n = (int) (Math.random()*3 + 1);
+        switch(opr_n) {
+            case 1:
+                exp.add(createnum());
+                exp.add(createopr1());
+                exp.add(createnum());
+                break;
+            case 2:
+                // æ‹¬å·èµ·å§‹ä½ç½®
+                int bkt_s = (int) (Math.random()*3);
+                // æ‹¬å·ç»“æŸä½ç½®
+                int bkt_e = 0;
+                // æ— æ‹¬å·
+                if (bkt_s == 0) {
+                    bkt_e = 0;
+                } else {
+                    bkt_e = bkt_s + 1;
+                }
+                for (int i = 1; i <= 3; i++) {
+                    if (bkt_s == i) {
+                        exp.add("(");
+                    }
+                    exp.add(createnum());
+                    if (bkt_e == i) {
+                        exp.add(")");
+                    }
+                    exp.add(createopr1());
+                }
+                // å¤„ç†æ‹¬å·æ— æ„ä¹‰æƒ…å†µ
+                checkbkt(bkt_s, bkt_e);
+                exp.remove(exp.size()-1);	// åˆ é™¤æœ€åå¤šåŠ å…¥çš„ä¸€ä¸ªè¿ç®—ç¬¦
+                break;
+            case 3:
+                // æ‹¬å·èµ·å§‹ä½ç½®
+                bkt_s = (int) (Math.random()*4);
+                // æ‹¬å·ç»“æŸä½ç½®
+                bkt_e = 0;
+                // æ— æ‹¬å·
+                if (bkt_s == 0) {
+                    bkt_e = 0;
+                } else if (bkt_s == 3){
+                    bkt_e = 4;
+                } else {
+                    bkt_e = bkt_s + (int) (Math.random()*2 + 1);    // [1,3)
+                }
+                for (int i = 1; i <= 4; i++) {
+                    if (bkt_s == i) {
+                        exp.add("(");
+                    }
+                    exp.add(createnum());
+                    if (bkt_e == i) {
+                        exp.add(")");
+                    }
+                    exp.add(createopr1());
+                }
+                // å¤„ç†æ‹¬å·æ— æ„ä¹‰æƒ…å†µ
+                checkbkt(bkt_s, bkt_e);
+                exp.remove(exp.size()-1);	// åˆ é™¤æœ€åå¤šåŠ å…¥çš„ä¸€ä¸ªè¿ç®—ç¬¦
+                break;
+        }
+        return exp;
+    }
 
+    public static int createnum() {	// äº§ç”Ÿéšæœºæ•°
+        return (int) (Math.random()*range);
+    }
+
+    public static String createopr1() {	// éšæœºäº§ç”Ÿè¿ç®—ç¬¦
+        return opr[(int) (Math.random()*4)];
+    }
+
+    public static String createopr2() {	// åªäº§ç”Ÿ x æˆ– Ã·
+        return opr[(int) (Math.random()*2 + 2)];
+    }
+
+    public static String createopr3() {	// åªäº§ç”Ÿ + æˆ– -
+        return opr[(int) (Math.random()*2)];
+    }
+
+    public static void checkbkt(int bkt_s, int bkt_e) {	// å¤„ç†æ‹¬å·æ— æ„ä¹‰æƒ…å†µ
+        if (bkt_e - bkt_s == 1) {
+            if (bkt_s == 1) {
+                String f = exp.get(2).toString();
+                String s = exp.get(5).toString();
+                if (!(f.equals("+") || (f.equals("-"))) && !(s.equals("x") || s.equals("Ã·"))) {
+                    exp.set(2, createopr3());
+                    exp.set(5, createopr2());
+                }
+            } else if (bkt_s == 2) {
+                String f = exp.get(1).toString();
+                String s = exp.get(4).toString();
+                if ((f.equals("+") || (f.equals("-"))) && (s.equals("x") || (s.equals("Ã·")))) {	// æ’é™¤ a + ( b x c ) æ­¤ç±»æ‹¬å·æ— æ„ä¹‰çš„æƒ…å†µ
+                    exp.set(1, createopr2());
+                }
+            } else if (bkt_s == 3) {
+                String f = exp.get(3).toString();
+                String s = exp.get(6).toString();
+                if ((f.equals("+") || (f.equals("-"))) && (s.equals("x") || s.equals("Ã·"))) {
+                    exp.set(3, createopr2());
+                } else if (((f.equals("+") || f.equals("-"))) && (s.equals("+") || s.equals("-"))) {
+                    exp.set(3, createopr2());
+                }
+            }
+        } else {
+            if (bkt_s == 1) {
+                String f = exp.get(2).toString();
+                String s = exp.get(4).toString();
+                String t = exp.get(7).toString();
+                if (!(t.equals("x") || t.equals("Ã·"))) {
+                    exp.set(7, createopr2());
+                    if (f.equals(s) && (f.equals("+") || f.equals("Ã·"))) {
+                        exp.set(4, createopr2());
+                    }
+                }
+            } else if (bkt_s == 2) {
+                String f = exp.get(1).toString();
+                String s = exp.get(4).toString();
+                String t = exp.get(6).toString();
+                if ((f.equals("+") || f.equals("-")) && (t.equals("x") || t.equals("Ã·"))) {
+                    exp.set(1, createopr2());
+                }
+            }
+        }
+    }
+
+    static String toString(Stack s) {   // è½¬æ¢ä¸ºå­—ç¬¦ä¸²
+        Iterator<Object> i = s.iterator();
+        String st = "";
+        while (i.hasNext()) {
+            st += i.next().toString();
+        }
+        return st;
+    }
+
+    static String toString(ArrayList<Object> list) {    // è½¬æ¢ä¸ºå­—ç¬¦ä¸²
+        String s = "";
+        for (int i=0; i<list.size(); i++) {
+            s += list.get(i).toString();
+        }
+        return s;
     }
 
     static void ifExist(List s) {
-        // ÓÃÓÚ¼ì²éÊÇ·ñÓĞÏàÍ¬µÄÌâÄ¿£¬²¢´¦Àí
+        // ç”¨äºæ£€æŸ¥æ˜¯å¦æœ‰ç›¸åŒçš„é¢˜ç›®ï¼Œå¹¶å¤„ç†
 
     }
-    
-  /*//½«ÖĞ×º±í´ïÊ½×ª»»³Éºó×º±í´ïÊ½
+
+
+  /*//å°†ä¸­ç¼€è¡¨è¾¾å¼è½¬æ¢æˆåç¼€è¡¨è¾¾å¼
     public static ArrayList transform(String prefix) {
         //System.out.println("transform");
         int i, len = prefix.length();
         prefix=prefix+ '#';
-        Stack<Character> stack = new Stack<Character>();// ±£´æ²Ù×÷·ûµÄÕ»
+        Stack<Character> stack = new Stack<Character>();// ä¿å­˜æ“ä½œç¬¦çš„æ ˆ
         stack.push('#');
         ArrayList postfix = new ArrayList();
-       
+
         for (i = 0; i < len + 1; i++) {
             //System.out.println(i+" "+prefix.charAt(i));
             if (Character.isDigit(prefix.charAt(i))) {
@@ -124,13 +254,13 @@ public class Arithmetic {
                     }
                     stack.pop();
                     break;
-                default:// Ä¬ÈÏÇé¿öÏÂ:+ - * /
+                default:// é»˜è®¤æƒ…å†µä¸‹:+ - * /
                     while (stack.peek() != '#'
                             && compare(stack.peek(), prefix.charAt(i))) {
-                        postfix.add(stack.pop());// ²»¶Ïµ¯Õ»£¬Ö±µ½µ±Ç°µÄ²Ù×÷·ûµÄÓÅÏÈ¼¶¸ßÓÚÕ»¶¥²Ù×÷·û
+                        postfix.add(stack.pop());// ä¸æ–­å¼¹æ ˆï¼Œç›´åˆ°å½“å‰çš„æ“ä½œç¬¦çš„ä¼˜å…ˆçº§é«˜äºæ ˆé¡¶æ“ä½œç¬¦
                     }
-                    if (prefix.charAt(i) != '#') {// Èç¹ûµ±Ç°µÄ²Ù×÷·û²»ÊÇ'#'(½áÊø·û)£¬ÄÇÃ´Èë²Ù×÷·ûÕ»
-                        stack.push(prefix.charAt(i));// ×îºóµÄ±êÊ¶·û'#'ÊÇ²»ÈëÕ»µÄ
+                    if (prefix.charAt(i) != '#') {// å¦‚æœå½“å‰çš„æ“ä½œç¬¦ä¸æ˜¯'#'(ç»“æŸç¬¦)ï¼Œé‚£ä¹ˆå…¥æ“ä½œç¬¦æ ˆ
+                        stack.push(prefix.charAt(i));// æœ€åçš„æ ‡è¯†ç¬¦'#'æ˜¯ä¸å…¥æ ˆçš„
                     }
                     break;
                 }
@@ -138,8 +268,7 @@ public class Arithmetic {
         }
         return postfix;
     }
-
-    //±È½ÏÔËËã·ûÖ®¼äµÄÓÅÏÈ¼¶
+    //æ¯”è¾ƒè¿ç®—ç¬¦ä¹‹é—´çš„ä¼˜å…ˆçº§
     public static boolean compare(char peek, char cur) {
         if (peek == '*'
                 && (cur == '+' || cur == '-' || cur == '/' || cur == '*')) {
@@ -156,8 +285,8 @@ public class Arithmetic {
         }
         return false;
     }
-    
-    //¼ÆËãºó×º±í´ïÊ½
+
+    //è®¡ç®—åç¼€è¡¨è¾¾å¼
     public static double calculate(ArrayList postfix){
         //System.out.println("calculate");
         int i,size=postfix.size();
@@ -166,7 +295,7 @@ public class Arithmetic {
         for(i=0;i<size;i++){
             if(postfix.get(i).getClass()==Integer.class){
             	//double c=(double) postfix.get(i);
-                stack_num.push(Double.parseDouble(String.valueOf( postfix.get(i))));                  
+                stack_num.push(Double.parseDouble(String.valueOf( postfix.get(i))));
                 //System.out.println("push"+" "+(Integer)postfix.get(i));
             }else{
                 //System.out.println((Character)postfix.get(i));
@@ -204,143 +333,139 @@ public class Arithmetic {
     }*/
 
 
-  static void check(File e, File a,File g) {
-        // ÓÃÓÚ¶Ô¸ø¶¨µÄÌâÄ¿ÎÄ¼şºÍ´ğ°¸ÎÄ¼şÅĞ¶Ï´ğ°¸ÎÄ¼şÖĞµÄ¶Ô´í²¢Í³¼Æ
-    	try (BufferedReader exReader = new BufferedReader(new FileReader(e));
-                BufferedReader anReader = new BufferedReader(new FileReader(a));
-                BufferedWriter gradeWriter = new BufferedWriter(new FileWriter(g))
-           ) {
-               String ex, an;
-               int c = 0, w = 0;
-               StringBuilder correct = new StringBuilder("Correct: %d (");
-               StringBuilder wrong = new StringBuilder("Wrong: %d (");
-               while ((ex = exReader.readLine()) != null && (an = anReader.readLine()) != null) {
-                   int exPoint = ex.indexOf(".");
-                   int anPoint = an.indexOf(".");
-                   if (exPoint != -1 && anPoint != -1) {
-                       int i = Integer.valueOf(ex.substring(0,exPoint).trim());
-                       String expression = ex.substring(exPoint + 2);
-                       String answer = an.substring(anPoint + 2);
-                       if (expression.calculate(postfix).equals(answer.toString())) {
-                    	   /*ĞèÒªÄÃµ½¼ÆËãµÄ½á¹ûÕâ¸ö·½·¨²ÅÄÜÓÃ
-                    	   ÉÏÃæ×¢ÊÍµôµÄÊÇÎÒ´Ó±ğÈË²©¿ÍCopyÀ´µÄÏà¹Ø´úÂë*/
-                           c++;
-                           correct.append(" ").append(i);
-                           if (c % 20 == 0) {
-                               correct.append("\n");
-                           }
-                       } else {
-                           w++;
-                           wrong.append(" ").append(i);
-                           if (w % 20 == 0) {
-                               wrong.append("\n");
-                           }
-                       }
-                   }
-               }
-               gradeWriter.write(String.format(correct.append(" )\n").toString(),c));
-               gradeWriter.write(String.format(wrong.append(" )\n").toString(),w));
-               gradeWriter.flush();
-           } catch (IOException e1) {
-               e1.printStackTrace();
-           }
+    static void check(File e, File a, File g) {
+        // ç”¨äºå¯¹ç»™å®šçš„é¢˜ç›®æ–‡ä»¶å’Œç­”æ¡ˆæ–‡ä»¶åˆ¤æ–­ç­”æ¡ˆæ–‡ä»¶ä¸­çš„å¯¹é”™å¹¶ç»Ÿè®¡
+        try (BufferedReader exReader = new BufferedReader(new FileReader(e));
+             BufferedReader anReader = new BufferedReader(new FileReader(a));
+             BufferedWriter gradeWriter = new BufferedWriter(new FileWriter(g))
+        ) {
+            String ex, an;
+            int c = 0, w = 0;
+            StringBuilder correct = new StringBuilder("Correct: %d (");
+            StringBuilder wrong = new StringBuilder("Wrong: %d (");
+            while ((ex = exReader.readLine()) != null && (an = anReader.readLine()) != null) {
+                int exPoint = ex.indexOf(".");
+                int anPoint = an.indexOf(".");
+                if (exPoint != -1 && anPoint != -1) {
+                    int i = Integer.valueOf(ex.substring(0,exPoint).trim());
+                    String expression = ex.substring(exPoint + 2);
+                    String answer = an.substring(anPoint + 2);
+                    if (expression.calculate(postfix).equals(answer.toString())) {
+                    	   /*éœ€è¦æ‹¿åˆ°è®¡ç®—çš„ç»“æœè¿™ä¸ªæ–¹æ³•æ‰èƒ½ç”¨
+                    	   ä¸Šé¢æ³¨é‡Šæ‰çš„æ˜¯æˆ‘ä»åˆ«äººåšå®¢Copyæ¥çš„ç›¸å…³ä»£ç */
+                        c++;
+                        correct.append(" ").append(i);
+                        if (c % 20 == 0) {
+                            correct.append("\n");
+                        }
+                    } else {
+                        w++;
+                        wrong.append(" ").append(i);
+                        if (w % 20 == 0) {
+                            wrong.append("\n");
+                        }
+                    }
+                }
+            }
+            gradeWriter.write(String.format(correct.append(" )\n").toString(),c));
+            gradeWriter.write(String.format(wrong.append(" )\n").toString(),w));
+            gradeWriter.flush();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
 
     }
 
     static String change(int n, int d) {
-        // ½«¼Ù·ÖÊı×ª»»ÎªÕæ·ÖÊı£¬µÚÒ»¸ö²ÎÊıÎª·Ö×Ó£¬µÚ¶ş¸öÎª·ÖÄ¸
-    	//¼Ù·ÖÊı×ªÕæ·ÖÊı·½·¨ Çó ×î´óÕû³ıÊıtemp+ÓàÊı/·ÖÄ¸
-    	int temp=1,min=n;
+        // å°†å‡åˆ†æ•°è½¬æ¢ä¸ºçœŸåˆ†æ•°ï¼Œç¬¬ä¸€ä¸ªå‚æ•°ä¸ºåˆ†å­ï¼Œç¬¬äºŒä¸ªä¸ºåˆ†æ¯
+        //å‡åˆ†æ•°è½¬çœŸåˆ†æ•°æ–¹æ³• æ±‚ æœ€å¤§æ•´é™¤æ•°temp+ä½™æ•°/åˆ†æ¯
+        int temp=1,min=n;
         if(n%d==0){
-        	return Integer.toString(n/d);
-        }//·Ö×Ó·ÖÄ¸ÓàÊıÎª0·µ»Ø×ÔÈ»Êı
+            return Integer.toString(n/d);
+        }//åˆ†å­åˆ†æ¯ä½™æ•°ä¸º0è¿”å›è‡ªç„¶æ•°
         if(d<min){
-        	min=d;
-        }	        
-       for(int i=min;i>1;i--){
-        	if(n%i==0&&d%i==0){
-        		temp=i;
-        		break;
-        	}
-        }//Çó×î´ó¹«Ô¼Êıtemp
+            min=d;
+        }
+        for(int i=min;i>1;i--){
+            if(n%i==0&&d%i==0){
+                temp=i;
+                break;
+            }
+        }//æ±‚æœ€å¤§å…¬çº¦æ•°temp
         if(temp==1){
-        	if(n<d){
-        		return n+"/"+d;
-        	}//Èç¹û·Ö×ÓĞ¡ÓÚ·ÖÄ¸£¬Ö±½Ó·µ»Ø¸Ã·ÖÊı
-        	else{
-        		return n/d+"'"+n%d+"/"+d;
-        	}
-        }//·ÖÄ¸´óÓÚ·Ö×Ó·µ»ØÕæ·ÖÊı
+            if(n<d){
+                return n+"/"+d;
+            }//å¦‚æœåˆ†å­å°äºåˆ†æ¯ï¼Œç›´æ¥è¿”å›è¯¥åˆ†æ•°
+            else{
+                return n/d+"'"+n%d+"/"+d;
+            }
+        }//åˆ†æ¯å¤§äºåˆ†å­è¿”å›çœŸåˆ†æ•°
         else{
-        	if(n<d){
-		        return n/temp+"/"+d/temp;
-        	}//»¯¼ò×î´ó¹«Ô¼Êı
-        	else{
-        		return (n/temp)/(d/temp)+"'"+(n/temp)%(d/temp)+"/"+d/temp;
-        	}//»¯¼òÕæ·ÖÊıµÄ×î´ó¹«Ô¼Êı
+            if(n<d){
+                return n/temp+"/"+d/temp;
+            }//åŒ–ç®€æœ€å¤§å…¬çº¦æ•°
+            else{
+                return (n/temp)/(d/temp)+"'"+(n/temp)%(d/temp)+"/"+d/temp;
+            }//åŒ–ç®€çœŸåˆ†æ•°çš„æœ€å¤§å…¬çº¦æ•°
         }
     }
 
     static void save(List s) {
-        // ÓÃÓÚ½«ÌâÄ¿´æÈëµ±Ç°Ä¿Â¼ÏÂµÄExercises.txtÎÄ¼ş
-    	  File question = new File("./Exercises.txt");
-         if (!question.exists()) {
-                System.out.println("ÎÄ¼ş²»´æÔÚ£¬´´½¨ÎÄ¼ş: Exercises.txt" );
-                try {
-                    question.createNewFile();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                System.out.println("ÎÄ¼şÒÑ´æÔÚ£¬ÎÄ¼şÎª: Exercises.txt" );
+        // ç”¨äºå°†é¢˜ç›®å­˜å…¥å½“å‰ç›®å½•ä¸‹çš„Exercises.txtæ–‡ä»¶
+        File question = new File("./Exercises.txt");
+        if (!question.exists()) {
+            System.out.println("æ–‡ä»¶ä¸å­˜åœ¨ï¼Œåˆ›å»ºæ–‡ä»¶: Exercises.txt" );
+            try {
+                question.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-         FileWriter fw;
-    	try {
-    		fw = new FileWriter(question);
-    		BufferedWriter bw =new BufferedWriter(fw);
-    	    for(int i=0;i<s.size();i++){
-    	    		String t = i+1+". "+(String) s.get(i);
-    	        bw.write( t);
-    	        bw.newLine();
-    	    }
-    	    bw.close();
-    	} catch (IOException e) {
-    		// TODO Auto-generated catch block
-    		e.printStackTrace();
-    	}
+        } else {
+            System.out.println("æ–‡ä»¶å·²å­˜åœ¨ï¼Œæ–‡ä»¶ä¸º: Exercises.txt" );
         }
-    
-
-    static void answer(List a) {
-        // ÓÃÓÚ½«ÌâÄ¿´ğ°¸´æÈëµ±Ç°Ä¿Â¼ÏÂµÄAnswer.txtÎÄ¼ş
-    	
-    		File answer = new File("./Answer.txt");
-         if (!answer.exists()) {
-                System.out.println("ÎÄ¼ş²»´æÔÚ£¬´´½¨ÎÄ¼ş: Answer.txt" );
-                try {
-                    answer.createNewFile();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                System.out.println("ÎÄ¼şÒÑ´æÔÚ£¬ÎÄ¼şÎª: Answer.txt" );
+        FileWriter fw;
+        try {
+            fw = new FileWriter(question);
+            BufferedWriter bw =new BufferedWriter(fw);
+            for(int i=0;i<s.size();i++){
+                String t = i+1+". "+(String) s.get(i);
+                bw.write( t);
+                bw.newLine();
             }
-         FileWriter fw;
-    	try {
-    		fw = new FileWriter(answer);
-    		BufferedWriter bw =new BufferedWriter(fw);
-    	    for(int i=0;i<a.size();i++){
-    	    		String t =i+1+". "+ (String) a.get(i);
-    	        bw.write( t);
-    	        bw.newLine();
-    	    }
-    	    bw.close();
-    	} catch (IOException e) {
-    		// TODO Auto-generated catch block
-    		e.printStackTrace();
-    	}
+            bw.close();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
 
+    static void answer(List a) {
+        // ç”¨äºå°†é¢˜ç›®ç­”æ¡ˆå­˜å…¥å½“å‰ç›®å½•ä¸‹çš„Answer.txtæ–‡ä»¶
 
+        File answer = new File("./Answer.txt");
+        if (!answer.exists()) {
+            System.out.println("æ–‡ä»¶ä¸å­˜åœ¨ï¼Œåˆ›å»ºæ–‡ä»¶: Answer.txt" );
+            try {
+                answer.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("æ–‡ä»¶å·²å­˜åœ¨ï¼Œæ–‡ä»¶ä¸º: Answer.txt" );
+        }
+        FileWriter fw;
+        try {
+            fw = new FileWriter(answer);
+            BufferedWriter bw =new BufferedWriter(fw);
+            for(int i=0;i<a.size();i++){
+                String t =i+1+". "+ (String) a.get(i);
+                bw.write( t);
+                bw.newLine();
+            }
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
