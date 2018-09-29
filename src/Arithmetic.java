@@ -342,5 +342,9 @@ public class Arithmetic {
         }
     }
 
-
+/* 每次更新代码之后在终端输入：
+ * git add .
+ * git commit -m "(更新了什么，进行描述)"
+ * git push origin wen'min
+ */
 
