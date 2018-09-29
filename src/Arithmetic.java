@@ -1,3 +1,4 @@
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -5,48 +6,56 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Arithmetic {
 
-    static List<String> e = new ArrayList<String>();   // 用于存放题目
+    static List<List<String>> e = new ArrayList<List<String>>();   // 用于存放题目
+    static List<Stack<Node>> e1 = new ArrayList<Stack<Node>>();
     static List<String> a = new ArrayList<String>();   // 用于按题号顺序存放答案
     static String[] opr = {"+", "-", "x", "÷"};
-    static ArrayList<String> exp = new ArrayList<String>();	// 表达式
+    static List<String> exp = new ArrayList<String>();	// 表达式
     static int  num = 10;    // 题目数量，默认为10道
     static int range = 0;   // 数值范围
     static String error = null;    // 错误信息
-    static String efile = "src" + File.separator;   // 给定的题目文件：Exercise.txt
-    static String afile = "src" + File.separator;   // 给定的答案文件：Answer.txt
+    static String efile = null;   // 给定的题目文件：Exercise.txt
+    static String afile = null;   // 给定的答案文件：Answer.txt
     static String gfile = "src" + File.separator;   // 结果统计文件：Grade.txt
 
-    static void main(String[] argv) {
-    
-    	
+    public static void main(String[] args) {
         // 根据功能处理参数
-        for (int i=0; i<argv.length; i++) {
-            if (argv[i].equals("-r")) {
-                range = Integer.parseInt(argv[i+1]);
-            } else if (argv[i].equals("-n"))
+        for (int i=0; i<args.length; i++) {
+            if (args[i].equals("-r")) {
+                range = Integer.parseInt(args[i+1]);
+            } else if (args[i].equals("-n"))
             {
-                num = Integer.parseInt(argv[i+1]);
-            } else if (argv[i].equals("-h")) {  // 帮助信息
+                num = Integer.parseInt(args[i+1]);
+            } else if (args[i].equals("-h")) {  // 帮助信息
                 System.out.println("-r 参数: 控制题目中数值（自然数、真分数和真分数分母）的范围 \n例如: Myapp.exe -r 10 将生成10以内(不包括10)的四则运算题目");
                 System.out.println("-n 参数: 控制生成题目的个数 \n例如: Myapp.exe -n 10  将生成10个题目");
                 System.out.println("支持对给定的题目文件和答案文件，判定答案中的对错并进行数量统计 具体参数如下:\nMyapp.exe -e <exercisefile>.txt -a <answerfile>.txt");
-            } else if (argv[i].equals("-e")) {
-                efile = efile + argv[i+1];
+            } else if (args[i].equals("-e")) {
+                efile = "./src" + File.separator + args[i+1];
                 range = 10; // 防止报错
-            } else if (argv[i].equals("-a")) {
-                afile = afile + argv[i+1];
+            } else if (args[i].equals("-a")) {
+                afile = "./src" + File.separator + args[i+1];
                 range = 10;
             }
         }
-        if (able(num, range)) {
+        if ((efile == null && afile != null) || (efile != null && afile == null)) {
+            error = "请给定完整参数，题目文件和答案文件均需给出！";
+        }
+        if (able(num, range) && efile == null && afile == null) {
             for (int i=0; i<num; i++) {
-                e.add(subject().toString());
+                subject();
+                String an = count(e.get(i));
+                a.add(an);
             }
             save(e);
-        }else {
+            answer(a);
+        } else if (efile != null && afile != null){
+            check(new File(efile), new File(afile), new File(gfile));
+        } else {
             System.out.println(error);
         }
     }
@@ -72,9 +81,10 @@ public class Arithmetic {
         return true;
     }
 
-    // 生成表达式
-    static ArrayList<String> subject() {
+    // 生成表达式，并存入题目列表
+    static void subject() {
         // 运算符个数 1-3 个
+        List<String> exp = new ArrayList<String>();
         int opr_n = (int) (Math.random()*3 + 1);
         switch(opr_n) {
             case 1:
@@ -104,14 +114,12 @@ public class Arithmetic {
                     exp.add(createopr1());
                 }
                 // 处理括号无意义情况
-                checkbkt(bkt_s, bkt_e);
+                checkbkt(bkt_s, bkt_e,exp);
                 exp.remove(exp.size()-1);	// 删除最后多加入的一个运算符
                 break;
             case 3:
                 // 括号起始位置
                 bkt_s = (int) (Math.random()*4);
-                // 括号结束位置
-                bkt_e = 0;
                 // 无括号
                 if (bkt_s == 0) {
                     bkt_e = 0;
@@ -131,19 +139,37 @@ public class Arithmetic {
                     exp.add(createopr1());
                 }
                 // 处理括号无意义情况
-                checkbkt(bkt_s, bkt_e);
+                checkbkt(bkt_s, bkt_e,exp);
                 exp.remove(exp.size()-1);	// 删除最后多加入的一个运算符
                 break;
         }
-        return exp;
+        e.add(exp);
+        System.out.println(toString(exp));
+        //  exp.clear();
     }
 
     // 产生随机数
     public static String createnum() {
-        int a = (int) (Math.random()*range*range);
-        int b = (int) (Math.random()*range);
+        ThreadLocalRandom rand = ThreadLocalRandom.current();
+        int a = rand.nextInt(range);
+        int b = rand.nextInt(range);
+        if (a == 0) {
+            a += (int) (Math.random()*range + 1);
+        }
+        if (b == 0) {
+            b += (int) (Math.random()*range + 1);
+        }
+        if (b == range) {
+            b = b-1;
+        }
         num n = new num(a,b);
         easy(n);
+        if (n.a == n.b) {
+            return Integer.toString(1);
+        }
+        if (n.b == 1) {
+            return Integer.toString(n.a);
+        }
         return n.tostring();
     }
 
@@ -178,24 +204,29 @@ public class Arithmetic {
     }
 
     // 处理括号无意义情况
-    public static void checkbkt(int bkt_s, int bkt_e) {
+    public static void checkbkt(int bkt_s, int bkt_e,List<String>exp) {
+        String f;
+        String s;
+        String t;
         if (bkt_e - bkt_s == 1) {
             if (bkt_s == 1) {
-                String f = exp.get(2).toString();
-                String s = exp.get(5).toString();
+                f = exp.get(2);
+                s = exp.get(5);
                 if (!(f.equals("+") || (f.equals("-"))) && !(s.equals("x") || s.equals("÷"))) {
                     exp.set(2, createopr3());
                     exp.set(5, createopr2());
                 }
             } else if (bkt_s == 2) {
-                String f = exp.get(1).toString();
-                String s = exp.get(4).toString();
-                if ((f.equals("+") || (f.equals("-"))) && (s.equals("x") || (s.equals("÷")))) {	// 排除 a + ( b x c ) 此类括号无意义的情况
-                    exp.set(1, createopr2());
+                f = exp.get(1);
+                s = exp.get(4);
+                if (exp.size()<8) {
+                    if ((f.equals("+") || (f.equals("-"))) && (s.equals("x") || (s.equals("÷")))) {	// 排除 a + ( b x c ) 此类括号无意义的情况
+                        exp.set(1, createopr2());
+                    }
                 }
             } else if (bkt_s == 3) {
-                String f = exp.get(3).toString();
-                String s = exp.get(6).toString();
+                f = exp.get(3);
+                s = exp.get(6);
                 if ((f.equals("+") || (f.equals("-"))) && (s.equals("x") || s.equals("÷"))) {
                     exp.set(3, createopr2());
                 } else if (((f.equals("+") || f.equals("-"))) && (s.equals("+") || s.equals("-"))) {
@@ -204,9 +235,9 @@ public class Arithmetic {
             }
         } else {
             if (bkt_s == 1) {
-                String f = exp.get(2).toString();
-                String s = exp.get(4).toString();
-                String t = exp.get(7).toString();
+                f = exp.get(2);
+                s = exp.get(4);
+                t = exp.get(7);
                 if (!(t.equals("x") || t.equals("÷"))) {
                     exp.set(7, createopr2());
                     if (f.equals(s) && (f.equals("+") || f.equals("÷"))) {
@@ -214,9 +245,9 @@ public class Arithmetic {
                     }
                 }
             } else if (bkt_s == 2) {
-                String f = exp.get(1).toString();
-                String s = exp.get(4).toString();
-                String t = exp.get(6).toString();
+                f = exp.get(1);
+                s = exp.get(4);
+                t = exp.get(6);
                 if ((f.equals("+") || f.equals("-")) && (t.equals("x") || t.equals("÷"))) {
                     exp.set(1, createopr2());
                 }
@@ -235,47 +266,124 @@ public class Arithmetic {
     }
 
     // 转换为字符串
-    static String toString(ArrayList<Object> list) {
+    static String toString(List<String> list) {
         String s = "";
         for (int i=0; i<list.size(); i++) {
-            s += list.get(i).toString();
+            s += (list.get(i).toString() + " ");
         }
         return s;
     }
 
-    // 计算表达式
-    public Stack<Node> count(ArrayList<String> list) {
-//        ArrayList<Object> r = new ArrayList<Object>();  // 存储后序遍历表达式结果
-        Stack<Node> a = new Stack<>();  // 栈
-        Stack<String> b = new Stack<>();
-        String op;
+    // 构建树计算表达式，并存入题目列表
+    public static String count(List<String> list) {
+        Stack<Node> a1 = new Stack<>();    // 数值栈
+        Stack<String> b = new Stack<>();    // 未处理的运算符栈
+//        Stack<Node> c = new Stack<>();    // 处理后的运算符栈
         for (int i=0; i<list.size(); i++) {
             // 当前指针为数值
-            String s = list.get(i);
-            String peek = b.peek();
-            if (!isop(s)) {
-                a.push(new Node(s, null, null));
+            String string = list.get(i);
+            if (!isop(string)) {
+                a1.push(new Node(string, null, null, null));
             } else {
-                while (!b.isEmpty() && !(s.equals("(") || (prefer(s) == 2 && prefer(peek) == 1) || ))
+                //比较符号栈中的顶层符号如果需要出栈
+                while (!b.isEmpty() && !(string.equals("(") || (prefer(string)==2 && prefer(b.peek())==1) ||
+                        (!string.equals(")") && b.peek().equals("(")))) {
+                    String symbol = b.pop();
+
+                    if (symbol.equals("(") && string.equals(")")) {
+                        break;
+                    }
+                    push(symbol, a1);
+
+                }
+                //如果符号不是")"就进栈
+                if (!string.equals(")")) {
+                    b.push(string);
+                }
             }
         }
 
+        while (!b.isEmpty()) {
+            push(b.pop(), a1);
+        }
+        negative(a1);
+//        a.add(a1.peek().result);
+        return a1.peek().result;
+    }
+
+    // 处理负数
+    public static void negative(Stack<Node> c) {
+        if (!c.isEmpty()) {
+            for (int i=0; i<c.size(); i++) {
+                Node n = c.get(i);
+                if (n.op.equals("-")) {
+                    num l = new num(n.left.result);
+                    num r = new num(n.right.result);
+                    if (l.a*r.b < r.a*l.b) {
+                        Node m = n.left;
+                        n.left = n.right;
+                        n.right = m;
+                        n.setResult();
+                    }
+                }
+            }
+        }
+    }
+
+    public static void push(String op, Stack<Node> a) {
+        if (!op.equals("(")) {
+            Node r = a.pop();
+            Node l = a.pop();
+            Node o = new Node(null, r, l, op);
+            o.result = count(r.result, l.result, op);
+            a.push(o);
+        }
+    }
+
+    public static String count(String r, String l, String op) {
+        num left = new num(l);
+        num right = new num(r);
+        switch (op) {
+            case "+":
+                return left.add(right).tostring();
+            case "-":
+                return left.sub(right).tostring();
+            case "x":
+                return left.mul(right).tostring();
+            case "÷":
+                return left.div(right).tostring();
+        }
+        return null;
     }
 
     static class Node {
         String result;
         Node right;
         Node left;
+        String op;
 
-        public Node(String result, Node right, Node left) {
+        public Node(String result, Node right, Node left, String op) {
             this.result = result;
             this.right = right;
             this.left = left;
+            this.op = op;
+        }
+
+        public void setResult() {
+            if (op!=null) {
+                result = count(right.result, left.result, op);
+            }
+        }
+
+        public void changelr() {
+            Node m = left;
+            right = left;
+            left = m;
         }
 
     }
 
-    public int prefer(String op) {
+    public static int prefer(String op) {  // 判断运算符优先级
         if (op.equals("-") || op.equals("+")) {
             return 1;
         } else if (op.equals("x") || op.equals("÷")) {
@@ -295,125 +403,70 @@ public class Arithmetic {
         }
     }
 
-    // 检查是否有相同的题目，并处理
-    static void ifExist(List s) {
-
-    }
-
-
- /* //将中缀表达式转换成后缀表达式
-    public static ArrayList transform(String prefix) {
-        //System.out.println("transform");
-        int i, len = prefix.length();
-        prefix=prefix+ '#';
-        Stack<Character> stack = new Stack<Character>();// 保存操作符的栈
-        stack.push('#');
-        ArrayList postfix = new ArrayList();
-
-        for (i = 0; i < len + 1; i++) {
-            //System.out.println(i+" "+prefix.charAt(i));
-            if (Character.isDigit(prefix.charAt(i))) {
-                if (Character.isDigit(prefix.charAt(i+1))) {
-                    postfix.add(10 * (prefix.charAt(i)-'0') + (prefix.charAt(i+1)-'0'));
-                    i++;
+    // 检查题目列表中是否有相同的题目，并处理
+    static void ifExist(ArrayList<String> s) {
+        for (int i=0; i<s.size(); i++) {
+            for (int j=i+1; j<s.size();) {
+                Stack<Node> f = e1.get(i);
+                Stack<Node> se = e1.get(j);
+                if (f.size() == se.size() && equals(f.pop(), se.pop())) {
+                    s.remove(j);
                 } else {
-                    postfix.add((prefix.charAt(i)-'0'));
-                }
-            } else {
-                switch (prefix.charAt(i)) {
-                case '(':
-                    stack.push(prefix.charAt(i));
-                    break;
-                case ')':
-                    while (stack.peek() != '(') {
-                        postfix.add(stack.pop());
-                    }
-                    stack.pop();
-                    break;
-                default:// 默认情况下:+ - * /
-                    while (stack.peek() != '#'
-                            && compare(stack.peek(), prefix.charAt(i))) {
-                        postfix.add(stack.pop());// 不断弹栈，直到当前的操作符的优先级高于栈顶操作符
-                    }
-                    if (prefix.charAt(i) != '#') {// 如果当前的操作符不是'#'(结束符)，那么入操作符栈
-                        stack.push(prefix.charAt(i));// 最后的标识符'#'是不入栈的
-                    }
-                    break;
+                    j++;
                 }
             }
         }
-        return postfix;
     }
-    //比较运算符之间的优先级
-    public static boolean compare(char peek, char cur) {
-        if (peek == '*'
-                && (cur == '+' || cur == '-' || cur == '/' || cur == '*')) {
+
+    static boolean equals(Node f, Node s) {
+
+        if (fullequals(f, s)) {
             return true;
-        } else if (peek == '/'
-                && (cur == '+' || cur == '-' || cur == '*' || cur == '/')) {
-            return true;
-        } else if (peek == '+' && (cur == '+' || cur == '-')) {
-            return true;
-        } else if (peek == '-' && (cur == '+' || cur == '-')) {
-            return true;
-        } else if (cur == '#') {
-            return true;
+        } else if (f.op.equals(s.op) && f.result.equals(s.result)){
+            if (change(f, s)) {
+                return true;
+            } else {
+                return equals(f.left, s.left) && equals(f.right, s.right);
+            }
         }
         return false;
     }
 
-    //计算后缀表达式
-    public static double calculate(ArrayList postfix){
-        //System.out.println("calculate");
-        int i,size=postfix.size();
-        double res=0;
-        Stack<Double> stack_num=new Stack<Double>();
-        for(i=0;i<size;i++){
-            if(postfix.get(i).getClass()==Integer.class){
-            	//double c=(double) postfix.get(i);
-                stack_num.push(Double.parseDouble(String.valueOf( postfix.get(i))));
-                //System.out.println("push"+" "+(Integer)postfix.get(i));
-            }else{
-                //System.out.println((Character)postfix.get(i));
-            	double a=stack_num.pop();
-            	double b=stack_num.pop();
-                switch((Character)postfix.get(i)){
-                case '+':
-                    res=b+a;
-                    //System.out.println("+ "+a+" "+b);
-                    break;
-                case '-':
-                    res=b-a;
-                    //System.out.println("- "+a+" "+b);
-                    break;
-                case '*':
-                    res=b*a;
-                    //System.out.println("* "+a+" "+b);
-                    break;
-                case '/':
-                    res=b/a;
-                    //System.out.println("/ "+a+" "+b);
-                    break;
-                }
-                stack_num.push(res);
-                //System.out.println("push"+" "+res);
+    static boolean change(Node f, Node s) {
+        if (f.op.equals("+") || f.op.equals("x")) {
+            f.changelr();
+            f.setResult();
+            if (nodeequal(f.left, s.left) && nodeequal(f.right, s.right)) {
+                return true;
             }
         }
-        res=stack_num.pop();
-        //System.out.println("res "+" "+res);
-        return res;
-       //if(res==24){
-           // return true;
-      // }
-        //return false;
-    }*/
+        return false;
+    }
 
+    static boolean nodeequal(Node f, Node s) {
+        return f.op.equals(s.left.op) && f.result.equals(s.left.result);
+    }
+
+    static boolean fullequals(Node f, Node s) {
+        if (f.op.equals(s.op) && f.result.equals(s.result)) {
+            return fullequals(f.left, s.left) && fullequals(f.right, s.right);
+        }
+        return false;
+    }
 
     static void check(File e, File a, File g) {
         // 用于对给定的题目文件和答案文件判断答案文件中的对错并统计
+        File g1 = new File("./src/Grade.txt");
+        if (!g1.exists()){
+            try {
+                g1.createNewFile();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }
         try (BufferedReader exReader = new BufferedReader(new FileReader(e));
              BufferedReader anReader = new BufferedReader(new FileReader(a));
-             BufferedWriter gradeWriter = new BufferedWriter(new FileWriter(g))
+             BufferedWriter gradeWriter = new BufferedWriter(new FileWriter(g1))
         ) {
             String ex, an;
             int c = 0, w = 0;
@@ -425,11 +478,14 @@ public class Arithmetic {
                 if (exPoint != -1 && anPoint != -1) {
                     int i = Integer.valueOf(ex.substring(0,exPoint).trim());
                     String expression = ex.substring(exPoint + 2);
+
+                    String[] exp = expression.split(" ");
+                    List<String> al = new ArrayList<String>();
+                    al = Arrays.asList(exp);
+                    String realanswer = count(al);
                     String answer = an.substring(anPoint + 2);
-                    if (expression.calculate(postfix).equals(answer.toString())) {
-                    	   /*需要拿到计算的结果这个方法才能用
-                    	   上面注释掉的是我从别人博客Copy来的相关代码*/
-                       c++;
+                    if (realanswer.equals(answer.toString())) {
+                        c++;
                         correct.append(" ").append(i);
                         if (c % 20 == 0) {
                             correct.append("\n");
@@ -452,9 +508,9 @@ public class Arithmetic {
 
     }
 
-    static void save(List<String> s) {
+    static void save(List<List<String>> s) {
         // 用于将题目存入当前目录下的Exercises.txt文件
-        File question = new File("./Exercises.txt");
+        File question = new File("./src/Exercises.txt");
         if (!question.exists()) {
             System.out.println("文件不存在，创建文件: Exercises.txt" );
             try {
@@ -467,14 +523,19 @@ public class Arithmetic {
         }
         FileWriter fw;
         try {
-            fw = new FileWriter(question);
-            BufferedWriter bw =new BufferedWriter(fw);
-            for(int i=0;i<s.size();i++){
-                String t = i+1 + ". "+ s.get(i);
-                bw.write( t);
+            fw=new FileWriter(question);
+            BufferedWriter bw = new BufferedWriter(fw);
+            for(int i=0;i<s.size();i++) {
+                String temp="";
+                for(int j=0;j<s.get(i).size();j++) {
+                    temp+=s.get(i).get(j)+" ";
+                }
+                String t = (i + 1) + ". " + temp;
+                bw.write(t);
                 bw.newLine();
             }
             bw.close();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -483,7 +544,7 @@ public class Arithmetic {
 
     static void answer(List<String> a) {
         // 用于将题目答案存入当前目录下的Answer.txt文件
-        File answer = new File("./Answer.txt");
+        File answer = new File("./src/Answer.txt");
         if (!answer.exists()) {
             System.out.println("文件不存在，创建文件: Answer.txt" );
             try {
@@ -500,8 +561,9 @@ public class Arithmetic {
             BufferedWriter bw =new BufferedWriter(fw);
             for(int i=0;i<a.size();i++){
                 String t =i+1+". "+ a.get(i);
-                bw.write( t);
+                bw.write(t);
                 bw.newLine();
+                bw.flush();
             }
             bw.close();
         } catch (IOException e) {

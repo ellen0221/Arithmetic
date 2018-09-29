@@ -1,6 +1,5 @@
-
 public class num {
-	public int a;  // 分子
+    public int a;  // 分子
     public int b;  // 分母
 
     public num() {
@@ -32,9 +31,6 @@ public class num {
     }
 
     public void check(int a, int b) {
-        if (b == 0) {
-            System.out.println("分母不能为0");
-        }
         if (a>=0 && b>0) {
             this.a = a;
             this.b = b;
@@ -66,7 +62,7 @@ public class num {
             return y == 0 ? b : gcd(b,y);
         } else return 1;
     }
-    
+
     public static num easy(num n) {    // 约分
         if (n.a == 0) {
             return new num(0, 1);
@@ -84,27 +80,20 @@ public class num {
 
     public String change(int n, int d) {
         // 将假分数转换为真分数，第一个参数为分子，第二个为分母
-        //假分数转真分数方法 求 最大整除数temp+余数/分母
-        num a = new num(n,d);
-        easy(a);
+        //假分数转真分数方法 求 最大整除数+余数/分母
+        num a = easy(new num(n,d));
         int left=a.a/a.b;
         int up=a.a-left*a.b;
         int down=a.b;
-        if(up==0) {
-        	return "0";
-        }
         if(left==0) {
-        	return up+"/"+down;
+            return up+"/"+down;
         }
         else if(down == 1) {
-        	return Integer.toString(n);
+            return Integer.toString(n);
         }else {
-        	return left+"'"+up+"/"+down;
+            return left+"'"+up+"/"+down;
         }
     }
-        
-        
-
 
     public String tostring() {  // 转换为字符串
         if (this.a>this.b) {
@@ -115,5 +104,4 @@ public class num {
             return this.a + "/" + this.b;
         }
     }
-
 }
