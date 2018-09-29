@@ -35,10 +35,10 @@ public class Arithmetic {
                 System.out.println("-n 参数: 控制生成题目的个数 \n例如: Myapp.exe -n 10  将生成10个题目");
                 System.out.println("支持对给定的题目文件和答案文件，判定答案中的对错并进行数量统计 具体参数如下:\nMyapp.exe -e <exercisefile>.txt -a <answerfile>.txt");
             } else if (args[i].equals("-e")) {
-                efile = "src" + File.separator + args[i+1];
+                efile = "./src" + File.separator + args[i+1];
                 range = 10; // 防止报错
             } else if (args[i].equals("-a")) {
-                afile = "src" + File.separator + args[i+1];
+                afile = "./src" + File.separator + args[i+1];
                 range = 10;
             }
         }
@@ -47,14 +47,6 @@ public class Arithmetic {
         }
         if (able(num, range) && efile == null && afile == null) {
             for (int i=0; i<num; i++) {
-//                System.out.println(subject().toString());
-//                [2'7/9, +, 10'3/4, -, 7'1/8]
-//                e.add("2'7/9");
-//                e.add("+");
-//                e.add("10'3/4");
-//                e.add("-");
-//                e.add("7'1/8");
-//                a.add(count(e));
                 subject();
                 String an = count(e.get(i));
                 a.add(an);
@@ -178,7 +170,6 @@ public class Arithmetic {
         if (n.b == 1) {
             return Integer.toString(n.a);
         }
-//        System.out.println(n.tostring());
         return n.tostring();
     }
 
@@ -316,7 +307,7 @@ public class Arithmetic {
             push(b.pop(), a1);
         }
         negative(a1);
-        a.add(a1.peek().result);
+//        a.add(a1.peek().result);
         return a1.peek().result;
     }
 
@@ -340,10 +331,6 @@ public class Arithmetic {
     }
 
     public static void push(String op, Stack<Node> a) {
-//        for (int i=0; i<a.size(); i++)
-//        {
-//            System.out.println(a.get(i).result);
-//        }
         if (!op.equals("(")) {
             Node r = a.pop();
             Node l = a.pop();
@@ -469,9 +456,17 @@ public class Arithmetic {
 
     static void check(File e, File a, File g) {
         // 用于对给定的题目文件和答案文件判断答案文件中的对错并统计
+        File g1 = new File("./src/Grade.txt");
+        if (!g1.exists()){
+            try {
+                g1.createNewFile();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }
         try (BufferedReader exReader = new BufferedReader(new FileReader(e));
              BufferedReader anReader = new BufferedReader(new FileReader(a));
-             BufferedWriter gradeWriter = new BufferedWriter(new FileWriter(g))
+             BufferedWriter gradeWriter = new BufferedWriter(new FileWriter(g1))
         ) {
             String ex, an;
             int c = 0, w = 0;
@@ -515,7 +510,7 @@ public class Arithmetic {
 
     static void save(List<List<String>> s) {
         // 用于将题目存入当前目录下的Exercises.txt文件
-        File question = new File("./Exercises.txt");
+        File question = new File("./src/Exercises.txt");
         if (!question.exists()) {
             System.out.println("文件不存在，创建文件: Exercises.txt" );
             try {
@@ -549,7 +544,7 @@ public class Arithmetic {
 
     static void answer(List<String> a) {
         // 用于将题目答案存入当前目录下的Answer.txt文件
-        File answer = new File("./Answer.txt");
+        File answer = new File("./src/Answer.txt");
         if (!answer.exists()) {
             System.out.println("文件不存在，创建文件: Answer.txt" );
             try {
