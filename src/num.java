@@ -1,4 +1,3 @@
-import ari.num;
 
 public class num {
 	public int a;  // ·Ö×Ó
@@ -118,5 +117,3 @@ public class num {
     }
 
 }
-
-

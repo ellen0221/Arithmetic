@@ -20,6 +20,8 @@ public class Arithmetic {
     static String gfile = "src" + File.separator;   // 结果统计文件：Grade.txt
 
     static void main(String[] argv) {
+    
+    	
         // 根据功能处理参数
         for (int i=0; i<argv.length; i++) {
             if (argv[i].equals("-r")) {
@@ -299,7 +301,7 @@ public class Arithmetic {
     }
 
 
-  /*//将中缀表达式转换成后缀表达式
+ /* //将中缀表达式转换成后缀表达式
     public static ArrayList transform(String prefix) {
         //System.out.println("transform");
         int i, len = prefix.length();
@@ -407,7 +409,7 @@ public class Arithmetic {
     }*/
 
 
-   /* static void check(File e, File a, File g) {
+    static void check(File e, File a, File g) {
         // 用于对给定的题目文件和答案文件判断答案文件中的对错并统计
         try (BufferedReader exReader = new BufferedReader(new FileReader(e));
              BufferedReader anReader = new BufferedReader(new FileReader(a));
@@ -427,7 +429,7 @@ public class Arithmetic {
                     if (expression.calculate(postfix).equals(answer.toString())) {
                     	   /*需要拿到计算的结果这个方法才能用
                     	   上面注释掉的是我从别人博客Copy来的相关代码*/
-                       /* c++;
+                       c++;
                         correct.append(" ").append(i);
                         if (c % 20 == 0) {
                             correct.append("\n");
@@ -448,7 +450,7 @@ public class Arithmetic {
             e1.printStackTrace();
         }
 
-    }*/
+    }
 
     static void save(List<String> s) {
         // 用于将题目存入当前目录下的Exercises.txt文件
